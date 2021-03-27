@@ -13,5 +13,8 @@
   },
   "bin": {
     "tool-e2j": "index.js"
+  },
+  "dependencies": {
+    "commander": "^7.2.0"
   }
 }

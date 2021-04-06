@@ -16,14 +16,14 @@ function json2Excel(argv, options) {
     if (!inFile.endsWith('.json')) {
         throw new Error('Error input file: ' + inFile)
     }
-    console.log(options)
+
     const outFile = options.out || inFile.replace('.json', '.xlsx')
     
     const data = JSON.parse(fs.readFileSync(inFile))
-    const result = []
+    let result = []
 
     if (Array.isArray(data)) {
-        throw new Error('Not implemented')
+        result = data
     } else {
         for (const key in data) {
             result.push({
@@ -40,19 +40,23 @@ function json2Excel(argv, options) {
 
 }
 
-function run(argv) {
+function run() {
     
     program.parse()
     const options = program.opts()
+    
+    console.log(options)
 
-    if (!argv || argv.length < 1) {
+    _argv = program.args
+
+    if (!_argv || _argv.length < 1) {
         console.log("basic usage: tool-e2j <.xlsx>")
     } else {
-        console.log(argv)
+
         if (options.j2e) {
-            json2Excel(argv, options)
+            json2Excel(_argv, options)
         } else {
-            const inFile = argv[0]
+            const inFile = _argv[0]
             if (!inFile.endsWith('.xlsx')) {
                 throw new Error('Error input file: ' + inFile)
             }
@@ -87,4 +91,4 @@ function run(argv) {
     }
 }
  
-run(process.argv.slice(2));
+run();

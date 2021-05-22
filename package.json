@@ -9,12 +9,15 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "xlsx": "^0.16.9"
+    "@typescript-eslint/eslint-plugin": "^4.24.0",
+    "@typescript-eslint/parser": "^4.24.0",
+    "eslint": "^7.26.0"
   },
   "bin": {
     "tool-e2j": "index.js"
   },
   "dependencies": {
-    "commander": "^7.2.0"
+    "commander": "^7.2.0",
+    "xlsx": "^0.16.9"
   }
 }

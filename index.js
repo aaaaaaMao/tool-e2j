@@ -9,6 +9,7 @@ program
   .option('-o, --out <file>', 'output file')
   .option('--split', 'split by sheet name')
   .option('--j2e', 'json (key:value) to excel')
+  .option('--multi', 'multi sheet')
 
 function main() {
   
@@ -74,8 +75,18 @@ function json2Excel(argv, options) {
   const data = JSON.parse(fs.readFileSync(inFile))
   let result = []
 
+  const workbook = XLSX.utils.book_new()
   if (Array.isArray(data)) {
-    result = data
+    if (options.multi) {
+      for (const item of data) {
+        if (item.sheet_name && item.data) {
+          const workSheet = XLSX.utils.json_to_sheet(item.data)
+          XLSX.utils.book_append_sheet(workbook, workSheet, item.sheet_name)
+        }
+      }
+    } else {
+      result = data
+    }
   } else {
     for (const key in data) {
       result.push({
@@ -85,9 +96,12 @@ function json2Excel(argv, options) {
     }
   }
 
-  const workbook = XLSX.utils.book_new()
-  const workSheet = XLSX.utils.json_to_sheet(result)
-  XLSX.utils.book_append_sheet(workbook, workSheet, 'sheet1')
+  if (result.length) {
+    console.log(result.length)
+    const workSheet = XLSX.utils.json_to_sheet(result)
+    XLSX.utils.book_append_sheet(workbook, workSheet, 'sheet1')
+  }
+
   XLSX.writeFile(workbook, outFile)
 
 }

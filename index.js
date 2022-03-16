@@ -28,11 +28,11 @@ function main() {
       json2Excel(_argv, options)
     } else {
       const inFile = _argv[0]
-      if (!inFile.endsWith('.xlsx')) {
+      if (!inFile.endsWith('.xlsx') && !inFile.endsWith('.csv')) {
         throw new Error('Error input file: ' + inFile)
       }
       console.log(options)
-      const outFile = options.out || inFile.replace('.xlsx', '.json')
+      const outFile = options.out || inFile.replace(/\.(xlsx|csv)/, '.json')
     
       const workbook = XLSX.readFile(inFile)
       const result = []

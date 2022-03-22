@@ -34,7 +34,9 @@ function main() {
       console.log(options)
       const outFile = options.out || inFile.replace(/\.(xlsx|csv)/, '.json')
     
-      const workbook = XLSX.readFile(inFile)
+      const workbook = XLSX.readFile(inFile, {
+        cellDates: true
+      })
       const result = []
       for (const sheetName of workbook.SheetNames) {
         /* Get worksheet */

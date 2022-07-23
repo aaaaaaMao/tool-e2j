@@ -8,76 +8,45 @@ const program = new Command()
 program
   .option('-o, --out <file>', 'output file')
   .option('--split', 'split by sheet name')
-  .option('--j2e', 'json (key:value) to excel')
   .option('--multi', 'multi sheet')
 
 function main() {
   
   program.parse()
   const options = program.opts()
-    
-  console.log(options)
+  const argv = program.args
 
-  const _argv = program.args
-
-  if (!_argv || _argv.length < 1) {
-    console.log('basic usage: tool-e2j <.xlsx>')
+  if (!argv || argv.length < 1) {
+    console.log('basic usage: tool-e2j *.{xlsx,csv}')
   } else {
 
-    if (options.j2e) {
-      json2Excel(_argv, options)
-    } else {
-      const inFile = _argv[0]
-      if (!inFile.endsWith('.xlsx') && !inFile.endsWith('.csv')) {
-        throw new Error('Error input file: ' + inFile)
+    for (const inFile of argv) {
+      if (!fs.existsSync(inFile)) {
+        console.error(`File: ${inFile} in not exist.`)
+        continue
       }
-      console.log(options)
-      const outFile = options.out || inFile.replace(/\.(xlsx|csv)/, '.json')
-    
-      const workbook = XLSX.readFile(inFile, {
-        cellDates: true
-      })
-      const result = []
-      for (const sheetName of workbook.SheetNames) {
-        /* Get worksheet */
-        const worksheet = workbook.Sheets[sheetName]
-        const data = XLSX.utils.sheet_to_json(worksheet)
-    
-        console.log(data.length, sheetName)
-        if (options.split) {
-          const file = outFile.replace('.json', '-') + sheetName + '.json'
-          fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8')
-          console.log('save ', sheetName)
-        } else {
-          result.push({
-            sheet_name: sheetName,
-            data,
-          })
-        }
-    
+      if (inFile.endsWith('.json')) {
+        json2excel(inFile, options)
       }
-      if (!options.split) {
-        fs.writeFileSync(outFile, JSON.stringify(result, null, 2), 'utf8')
+      if (inFile.endsWith('.xlsx') || inFile.endsWith('.csv')) {
+        excel2json(inFile, options)
       }
     }
+
     console.log('Done :)')
   }
+
 }
 
 main()
 
-function json2Excel(argv, options) {
-  const inFile = argv[0]
-  if (!inFile.endsWith('.json')) {
-    throw new Error('Error input file: ' + inFile)
-  }
+function json2excel(inFile, options) {
 
   const outFile = options.out || inFile.replace('.json', '.xlsx')
-    
   const data = JSON.parse(fs.readFileSync(inFile))
   let result = []
-
   const workbook = XLSX.utils.book_new()
+
   if (Array.isArray(data)) {
     if (options.multi) {
       for (const item of data) {
@@ -106,4 +75,36 @@ function json2Excel(argv, options) {
 
   XLSX.writeFile(workbook, outFile)
 
+  console.log(`Convert ${inFile}`)
+}
+
+function excel2json(inFile, options) {
+
+  const outFile = options.out || inFile.replace(/\.(xlsx|csv)/, '.json')
+
+  const workbook = XLSX.readFile(inFile, {
+    cellDates: true
+  })
+  const result = []
+  for (const sheetName of workbook.SheetNames) {
+    /* Get worksheet */
+    const worksheet = workbook.Sheets[sheetName]
+    const data = XLSX.utils.sheet_to_json(worksheet)
+
+    console.log(data.length, sheetName)
+    if (options.split) {
+      const file = outFile.replace('.json', '-') + sheetName + '.json'
+      fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8')
+      console.log('save ', sheetName)
+    } else {
+      result.push({
+        sheet_name: sheetName,
+        data,
+      })
+    }
+
+  }
+  if (!options.split) {
+    fs.writeFileSync(outFile, JSON.stringify(result, null, 2), 'utf8')
+  }
 }

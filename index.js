@@ -9,6 +9,7 @@ program
   .option('-o, --out <file>', 'output file')
   .option('--split', 'split by sheet name')
   .option('--multi', 'multi sheet')
+  .option('--rawStr', 'parse the input data as plain text')
 
 function main() {
   
@@ -82,9 +83,15 @@ function excel2json(inFile, options) {
 
   const outFile = options.out || inFile.replace(/\.(xlsx|csv)/, '.json')
 
-  const workbook = XLSX.readFile(inFile, {
+  const readOpts = {
     cellDates: true
-  })
+  }
+  if (options.rawStr) {
+    readOpts.type = 'string'
+    readOpts.raw = true
+  }
+  const workbook = XLSX.readFile(inFile, readOpts)
+
   const result = []
   for (const sheetName of workbook.SheetNames) {
     /* Get worksheet */

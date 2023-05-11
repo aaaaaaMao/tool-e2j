@@ -18,7 +18,7 @@ function main() {
   const argv = program.args
 
   if (!argv || argv.length < 1) {
-    console.log('basic usage: tool-e2j *.{xlsx,csv}')
+    console.log('basic usage: tool-e2j *.{xlsx,csv,json}')
   } else {
 
     for (const inFile of argv) {
@@ -90,6 +90,23 @@ function excel2json(inFile, options) {
     readOpts.type = 'string'
     readOpts.raw = true
   }
+
+  if (inFile.endsWith('.csv')) {
+    const buffer = Buffer.alloc(3)
+    const fd = fs.openSync(inFile)
+    fs.readSync(fd, buffer, {
+      length: 3
+    })
+    fs.closeSync(fd)
+    
+    if (buffer.toString('hex') !=='efbbbf') {
+      const raw = fs.readFileSync(inFile, 'utf8')
+      inFile = inFile.replace(/\.csv/, '_bom.csv')
+      fs.writeFileSync(inFile, '\ufeff' + raw, 'utf8')
+      console.log('to utf8 with BOM')
+    }
+  }
+
   const workbook = XLSX.readFile(inFile, readOpts)
 
   const result = []
